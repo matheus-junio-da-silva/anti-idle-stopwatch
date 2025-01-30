@@ -22,6 +22,7 @@ class Stopwatch:
             if not self._is_running:
                 self._start_time = time.monotonic()
                 self._is_running = True
+                self._last_activity_time = self._start_time  # Atualizar atividade ao iniciar
 
     def pause(self) -> None:
         """Pause the stopwatch"""
@@ -78,7 +79,7 @@ class ActivityMonitor:
         self._event_queue = Queue()
         self._running = False
 
-    def _on_activity(self) -> None:
+    def _on_activity(self, *args, **kwargs) -> None:  # <-- Modificado para aceitar argumentos
         """Handle any user activity event"""
         self._event_queue.put(True)
 

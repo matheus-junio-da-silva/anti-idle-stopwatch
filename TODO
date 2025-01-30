@@ -1,0 +1,10 @@
+1- fica aparecendo varios pop-ups em sequencia dizendo se quer descontar 
+o tempo, mas deve aparecer apenas 1 pop-up por vez
+
+2- colocar a logica de depois do tempo de inatividade 
+estipulado pelo usuario, remover todo aquele tempo de inatividade
+por exemplo: o usuario definiu que o tempo de inatividade é
+5 minutos, porem depois desses 5 minutos de inatividade
+ele ficou mais 15 minutos, colocar a logica de remover tambem
+esses 15 minutos de inatividade, totalizando 20 minutos de 
+inatividade

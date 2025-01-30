@@ -20,9 +20,10 @@ class TimerApp:
         self.running = False
         
         # Initialize UI
+        self.user_started = False  # Novo flag adicionado
         self._setup_ui()
-        self._setup_idle_check()
         self.protocols()
+        self._setup_idle_check()  # Movido para depois da inicialização da UI
 
     def _setup_ui(self) -> None:
         """Create and arrange UI components"""
@@ -90,10 +91,14 @@ class TimerApp:
     def toggle_timer(self) -> None:
         """Handle start/pause toggle"""
         if self.stopwatch._is_running:
+            # Pausar manualmente
             self.stopwatch.pause()
             self.start_btn.config(text="Start")
             self.reset_btn.config(state=tk.NORMAL)
+            self.user_started = False  # Atualizar flag
         else:
+            # Iniciar manualmente
+            self.user_started = True  # Atualizar flag
             self.stopwatch.start()
             self.start_btn.config(text="Pause")
             self.reset_btn.config(state=tk.DISABLED)
@@ -116,9 +121,11 @@ class TimerApp:
     def handle_activity(self) -> None:
         """Handle user activity detection"""
         self.stopwatch.update_activity()
-        if not self.stopwatch._is_running:
+        # Só reiniciar se foi iniciado pelo usuário e está pausado
+        if self.user_started and not self.stopwatch._is_running:
             self.stopwatch.start()
             self.start_btn.config(text="Pause")
+            self.update_time_display()  # Forçar atualização do display
 
     def check_idle_time(self) -> None:
         """Background thread to check for idle time"""
@@ -133,7 +140,9 @@ class TimerApp:
 
     def handle_idle_timeout(self, threshold: int) -> None:
         """Handle idle timeout confirmation"""
+        was_running = self.stopwatch._is_running
         self.stopwatch.pause()
+        
         response = messagebox.askyesno(
             "Idle Time Detected",
             f"Subtract {threshold//60} minutes of idle time?",
@@ -142,14 +151,18 @@ class TimerApp:
         
         if response:
             self.stopwatch.subtract_idle_time(threshold)
-        self.update_time_display()
-        self.start_btn.config(text="Start")
+        
+        # Restaurar estado apenas se estava rodando antes da pausa
+        if was_running:
+            self.stopwatch.start()
+            self.update_time_display()
 
     def update_time_display(self) -> None:
         """Update the GUI time display"""
+        elapsed = self.stopwatch.get_elapsed()
+        self.time_var.set(str(elapsed).split('.')[0])
+        # Agendar próxima atualização só se estiver rodando
         if self.stopwatch._is_running:
-            elapsed = self.stopwatch.get_elapsed()
-            self.time_var.set(str(elapsed).split('.')[0])
             self.root.after(1000, self.update_time_display)
 
     def export_data(self) -> None:
